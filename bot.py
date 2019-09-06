@@ -4,6 +4,7 @@ import os
 import logging
 import random
 import json
+import threading
 
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
@@ -20,6 +21,8 @@ SAY_CMD = 'say'
 BIBA_CMD = 'biba'
 HELP_CMD = 'help'
 STATISTICS_CMD = 'stat'
+
+updater = None
 
 
 # TODO: save somewhere statistic
@@ -62,12 +65,26 @@ def help_cmd(update, context):
 
 
 def statistics_cmd(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id, text=f"Эти ублюдки мне должны \n - {json.dumps(USERS, indent=4, sort_keys=True)}")
+    context.bot.send_message(chat_id=update.message.chat_id,
+                             text=f"Эти ублюдки мне должны \n - {json.dumps(USERS, indent=4, sort_keys=True)}")
+
+
+def shutdown():
+    global updater
+    updater.stop()
+    updater.is_idle = False
+
+
+def secret_exit(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="ня-пока")
+    threading.Thread(target=shutdown).start()
 
 
 def main():
     load_dotenv()
     token = os.getenv("TOKEN")
+
+    global updater
 
     updater = Updater(token=token, use_context=True)
     dispatcher = updater.dispatcher
@@ -77,14 +94,18 @@ def main():
     help_handler = CommandHandler(HELP_CMD, help_cmd)
     statistics_handler = CommandHandler(STATISTICS_CMD, statistics_cmd)
     unknown_handler = MessageHandler(Filters.command, unknown_cmd)
+    secret_exit_handler = CommandHandler(os.getenv('EXIT_COMMAND'), secret_exit)
 
     dispatcher.add_handler(bibametr_handler)
     dispatcher.add_handler(say_handler)
     dispatcher.add_handler(help_handler)
     dispatcher.add_handler(statistics_handler)
+    dispatcher.add_handler(secret_exit_handler)
     dispatcher.add_handler(unknown_handler)
 
     updater.start_polling()
+
+    updater.idle()
 
 
 if __name__ == '__main__':
