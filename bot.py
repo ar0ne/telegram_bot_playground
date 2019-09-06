@@ -20,9 +20,14 @@ def unknown(update, context):
 
 
 def say_cmd(update, context):
-    message = ' '.join(context.args) + ', кожанный ублюдок!'
-    audio = generate_audio(text=message)
-    context.bot.send_voice(chat_id=update.message.chat_id, voice=open(audio.name, 'rb'))
+    ending = ', кожаный ублюдок!'
+    draft_message = ' '.join(context.args)
+    if 0 < len(draft_message.strip()) < 250:
+        message = f"{draft_message}{ending}"
+        audio = generate_audio(text=message)
+        context.bot.send_voice(chat_id=update.message.chat_id, voice=open(audio.name, 'rb'))
+    else:
+        context.bot.send_message(chat_id=update.message.chat_id, text=f'Попроси лучше{ending}')
 
 
 def bibametr_cmd(update, context):
