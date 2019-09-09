@@ -64,7 +64,10 @@ class TelegramBot:
             self._calculate_uses(update)
             message = f"{draft_message}{ending}"
             audio = generate_audio(text=message)
-            context.bot.send_voice(chat_id=update.message.chat_id, voice=open(audio.name, 'rb'))
+            if audio:
+                context.bot.send_voice(chat_id=update.message.chat_id, voice=open(audio.name, 'rb'))
+            else:
+                context.bot.send_message(chat_id=update.message.chat_id, text="рвфцвьцфьтвоцфв")
         else:
             context.bot.send_message(chat_id=update.message.chat_id, text=f'Попроси лучше{ending}')
 

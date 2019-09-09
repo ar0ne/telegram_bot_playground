@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import sys
 import boto3
 
 from contextlib import closing
@@ -33,8 +32,7 @@ def generate_audio(language: str = 'ru-RU', voice: str = 'Maxim', text: str = No
                     return file
             except IOError as error:
                 # Could not write to file, exit gracefully
-                print(error)
-                sys.exit(-1)
+                logging.error(error)
 
 
 if __name__ == '__main__':
