@@ -11,7 +11,8 @@ from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 from dotenv import load_dotenv
 
-from text2speech import generate_audio
+from extensions.text2speech import generate_audio
+from extensions.screenshoter import take_screenshot
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -28,6 +29,7 @@ class TelegramBot:
         self.HELP_CMD = 'help'
         self.STATISTICS_CMD = 'stat'
         self.EXIT_CMD = os.getenv('EXIT_COMMAND')
+        self.SCREENSHOT_CMD = 'shot'
 
         self.USERS = {}
 
@@ -38,12 +40,14 @@ class TelegramBot:
         statistics_handler = CommandHandler(self.STATISTICS_CMD, self.statistics_cmd)
         unknown_handler = MessageHandler(Filters.command, self.unknown_cmd)
         secret_exit_handler = CommandHandler(self.EXIT_CMD, self.secret_exit_cmd)
+        screenshot_handler = CommandHandler(self.SCREENSHOT_CMD, self.screenshot_cmd)
 
         self._dispatcher.add_handler(bibametr_handler)
         self._dispatcher.add_handler(say_handler)
         self._dispatcher.add_handler(help_handler)
         self._dispatcher.add_handler(statistics_handler)
         self._dispatcher.add_handler(secret_exit_handler)
+        self._dispatcher.add_handler(screenshot_handler)
         self._dispatcher.add_handler(unknown_handler)
 
     def start(self):
@@ -74,6 +78,7 @@ class TelegramBot:
             self.BIBA_CMD,
             self.HELP_CMD,
             self.STATISTICS_CMD,
+            self.SCREENSHOT_CMD,
         ]
         context.bot.send_message(chat_id=update.message.chat_id, text=f"Умею и могу - {', '.join(commands)}")
 
@@ -84,6 +89,26 @@ class TelegramBot:
     def shutdown(self):
         self._updater.stop()
         self._updater.is_idle = False
+
+    def screenshot_cmd(self, update, context):
+        if len(context.args) == 1:
+            url = context.args[0]
+            screen = take_screenshot(url)
+            if screen:
+                context.bot.send_photo(
+                    chat_id=update.message.chat_id,
+                    photo=screen
+                )
+            else:
+                context.bot.send_message(
+                    chat_id=update.message.chat_id,
+                    text="Не могу сделать скрин."
+                )
+        else:
+            context.bot.send_message(
+                chat_id=update.message.chat_id,
+                text="Не понял, повтори."
+            )
 
     # TODO: save somewhere statistic
     def _calculate_uses(self, update):
@@ -101,7 +126,7 @@ class TelegramBot:
 def main():
     load_dotenv()
 
-    bot = TelegramBot(token=os.getenv("TOKEN"))
+    bot = TelegramBot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
     bot.init_handlers()
     bot.start()
 

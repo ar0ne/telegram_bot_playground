@@ -9,6 +9,8 @@ verify_ssl = true
 boto3 = "*"
 python-telegram-bot = "*"
 python-dotenv = "*"
+requests = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.7"
