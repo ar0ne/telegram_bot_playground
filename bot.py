@@ -16,96 +16,94 @@ from text2speech import generate_audio
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-USERS = {}
-SAY_CMD = 'say'
-BIBA_CMD = 'biba'
-HELP_CMD = 'help'
-STATISTICS_CMD = 'stat'
 
-updater = None
+class TelegramBot:
+    def __init__(self, token: str):
+        self._token = token
+        self._updater = Updater(token=token, use_context=True)
+        self._dispatcher = self._updater.dispatcher
 
+        self.SAY_CMD = 'say'
+        self.BIBA_CMD = 'biba'
+        self.HELP_CMD = 'help'
+        self.STATISTICS_CMD = 'stat'
+        self.EXIT_CMD = os.getenv('EXIT_COMMAND')
 
-# TODO: save somewhere statistic
-def _calculate_uses(update):
-    username = update.message.chat.username
-    if username in USERS:
-        USERS[username] += 1
-    else:
-        USERS[username] = 1
+        self.USERS = {}
 
+    def init_handlers(self):
+        bibametr_handler = CommandHandler(self.BIBA_CMD, self.bibametr_cmd)
+        say_handler = CommandHandler(self.SAY_CMD, self.say_cmd)
+        help_handler = CommandHandler(self.HELP_CMD, self.help_cmd)
+        statistics_handler = CommandHandler(self.STATISTICS_CMD, self.statistics_cmd)
+        unknown_handler = MessageHandler(Filters.command, self.unknown_cmd)
+        secret_exit_handler = CommandHandler(self.EXIT_CMD, self.secret_exit_cmd)
 
-def unknown_cmd(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id, text="Твоя моя не пониматъ.")
+        self._dispatcher.add_handler(bibametr_handler)
+        self._dispatcher.add_handler(say_handler)
+        self._dispatcher.add_handler(help_handler)
+        self._dispatcher.add_handler(statistics_handler)
+        self._dispatcher.add_handler(secret_exit_handler)
+        self._dispatcher.add_handler(unknown_handler)
 
+    def start(self):
+        self._updater.start_polling()
+        self._updater.idle()
 
-def say_cmd(update, context):
-    ending = ', кожаный ублюдок!'
-    draft_message = ' '.join(context.args)
-    if 0 < len(draft_message.strip()) < 250:
-        _calculate_uses(update)
-        message = f"{draft_message}{ending}"
-        audio = generate_audio(text=message)
-        context.bot.send_voice(chat_id=update.message.chat_id, voice=open(audio.name, 'rb'))
-    else:
-        context.bot.send_message(chat_id=update.message.chat_id, text=f'Попроси лучше{ending}')
+    def unknown_cmd(self, update, context):
+        context.bot.send_message(chat_id=update.message.chat_id, text="Твоя моя не пониматъ.")
 
+    def say_cmd(self, update, context):
+        ending = ', кожаный ублюдок!'
+        draft_message = ' '.join(context.args).strip()
+        if 0 < len(draft_message) < 250:
+            self._calculate_uses(update)
+            message = f"{draft_message}{ending}"
+            audio = generate_audio(text=message)
+            context.bot.send_voice(chat_id=update.message.chat_id, voice=open(audio.name, 'rb'))
+        else:
+            context.bot.send_message(chat_id=update.message.chat_id, text=f'Попроси лучше{ending}')
 
-def bibametr_cmd(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id, text=f"Твоя биба {random.randrange(3, 26)} сантиметров!")
+    def bibametr_cmd(self, update, context):
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=f"Твоя биба {random.randrange(3, 26)} сантиметров!")
 
+    def help_cmd(self, update, context):
+        commands = [
+            self.SAY_CMD,
+            self.BIBA_CMD,
+            self.HELP_CMD,
+            self.STATISTICS_CMD,
+        ]
+        context.bot.send_message(chat_id=update.message.chat_id, text=f"Умею и могу - {', '.join(commands)}")
 
-def help_cmd(update, context):
-    commands = [
-        SAY_CMD,
-        BIBA_CMD,
-        HELP_CMD,
-        STATISTICS_CMD,
-    ]
-    context.bot.send_message(chat_id=update.message.chat_id, text=f"Умею и могу - {', '.join(commands)}")
+    def statistics_cmd(self, update, context):
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=f"Эти ублюдки мне должны \n - {json.dumps(self.USERS, indent=4, sort_keys=True)}")
 
+    def shutdown(self):
+        self._updater.stop()
+        self._updater.is_idle = False
 
-def statistics_cmd(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id,
-                             text=f"Эти ублюдки мне должны \n - {json.dumps(USERS, indent=4, sort_keys=True)}")
+    # TODO: save somewhere statistic
+    def _calculate_uses(self, update):
+        username = update.message.chat.username
+        if username in self.USERS:
+            self.USERS[username] += 1
+        else:
+            self.USERS[username] = 1
 
-
-def shutdown():
-    global updater
-    updater.stop()
-    updater.is_idle = False
-
-
-def secret_exit(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id, text="ня-пока")
-    threading.Thread(target=shutdown).start()
+    def secret_exit_cmd(self, update, context):
+        context.bot.send_message(chat_id=update.message.chat_id, text="ня-пока")
+        threading.Thread(target=self.shutdown).start()
 
 
 def main():
     load_dotenv()
-    token = os.getenv("TOKEN")
 
-    global updater
-
-    updater = Updater(token=token, use_context=True)
-    dispatcher = updater.dispatcher
-
-    bibametr_handler = CommandHandler(BIBA_CMD, bibametr_cmd)
-    say_handler = CommandHandler(SAY_CMD, say_cmd)
-    help_handler = CommandHandler(HELP_CMD, help_cmd)
-    statistics_handler = CommandHandler(STATISTICS_CMD, statistics_cmd)
-    unknown_handler = MessageHandler(Filters.command, unknown_cmd)
-    secret_exit_handler = CommandHandler(os.getenv('EXIT_COMMAND'), secret_exit)
-
-    dispatcher.add_handler(bibametr_handler)
-    dispatcher.add_handler(say_handler)
-    dispatcher.add_handler(help_handler)
-    dispatcher.add_handler(statistics_handler)
-    dispatcher.add_handler(secret_exit_handler)
-    dispatcher.add_handler(unknown_handler)
-
-    updater.start_polling()
-
-    updater.idle()
+    bot = TelegramBot(token=os.getenv("TOKEN"))
+    bot.init_handlers()
+    bot.start()
 
 
 if __name__ == '__main__':
