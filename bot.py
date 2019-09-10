@@ -11,6 +11,7 @@ from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 from dotenv import load_dotenv
 
+from dao.db import DataBaseConnector
 from extensions.text2speech import generate_audio
 from extensions.screenshoter import take_screenshot
 
@@ -30,6 +31,8 @@ class TelegramBot:
         self.STATISTICS_CMD = 'stat'
         self.EXIT_CMD = os.getenv('EXIT_COMMAND')
         self.SCREENSHOT_CMD = 'shot'
+
+        self.db = DataBaseConnector('sqlite:///:memory:')
 
         self.USERS = {}
 

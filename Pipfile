@@ -11,6 +11,7 @@ python-telegram-bot = "*"
 python-dotenv = "*"
 requests = "*"
 pillow = "*"
+sqlalchemy = "*"
 
 [requires]
 python_version = "3.7"
