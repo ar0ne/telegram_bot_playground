@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class TelegramBot:
-    def __init__(self, token: str):
+    def __init__(self, token: str, db_url: str):
         self._token = token
         self._updater = Updater(token=token, use_context=True)
         self._dispatcher = self._updater.dispatcher
@@ -32,7 +32,7 @@ class TelegramBot:
         self.EXIT_CMD = os.getenv('EXIT_COMMAND')
         self.SCREENSHOT_CMD = 'shot'
 
-        self.db = DataBaseConnector('sqlite:///:memory:')
+        self.db = DataBaseConnector(db_url)
 
         self.USERS = {}
 
@@ -132,7 +132,10 @@ class TelegramBot:
 def main():
     load_dotenv()
 
-    bot = TelegramBot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
+    bot = TelegramBot(
+        token=os.getenv("TELEGRAM_BOT_TOKEN"),
+        db_url=os.getenv("DB_URL")
+    )
     bot.init_handlers()
     bot.start()
 

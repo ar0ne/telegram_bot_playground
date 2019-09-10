@@ -51,6 +51,3 @@ class Command(Base):
         back_populates='commands'
     )
 
-
-if __name__ == '__main__':
-    pass
