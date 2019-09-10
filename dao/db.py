@@ -1,9 +1,8 @@
 from sqlalchemy import create_engine, inspect
 from contextlib import contextmanager
-from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
 
-from models import Base, User, Command
+from models import Base, User, Command, Statistics
 from typing import Any, Dict, List, Optional
 
 
@@ -12,11 +11,11 @@ class DataBaseConnector:
         self._engine = create_engine(url, echo=True)
         self.Session = sessionmaker(bind=self._engine)
 
-        Base.metadata.create_all(self._engine)
+        self.base = Base
+        self.base.metadata.create_all(self._engine)
 
         # workaround for automap
-        self.AutoMappedBase = automap_base()
-        self.AutoMappedBase.prepare(self._engine, reflect=True)
+        self.base.prepare(self._engine, reflect=True)
 
     @contextmanager
     def session_scope(self):
@@ -33,30 +32,39 @@ class DataBaseConnector:
 
 
 class BaseDao:
-    def __init__(self, conn: DataBaseConnector, entity_clazz):
+    @property
+    def entity_clazz(self):
+        return self.conn.base.classes.statistics
+
+    def __init__(self, conn: DataBaseConnector):
         assert conn is not None, "Connection must be not null!"
-        assert entity_clazz is not None, "Entity clazz must be not null!"
         self.conn = conn
-        self.entity_clazz = entity_clazz
 
     def get_all(self) -> List[Dict[str, Any]]:
         with self.conn.session_scope() as session:
             objects = session.query(self.entity_clazz).all()
-            return [obj._asdict() for obj in objects]
+            return [self._asdict(obj) for obj in objects]
 
     def get_by_id(self, id: int) -> Optional[Dict[str, Any]]:
         with self.conn.session_scope() as session:
             obj = session.query(self.entity_clazz).get(id)
             if obj:
-                return obj._asdict()
+                return self._asdict(obj)
 
     def delete(self, id: int) -> None:
         with self.conn.session_scope() as session:
             obj = session.query(self.entity_clazz).filter(self.entity_clazz.id == id).first()
             session.delete(obj)
 
+    def _asdict(self, obj):
+        return {
+            c.key: getattr(obj, c.key)
+            for c in inspect(obj).mapper.column_attrs
+        }
+
 
 class UserDao(BaseDao):
+    entity_clazz = User
 
     def add(self, id: int, username: str, first_name: str, last_name: str) -> None:
         with self.conn.session_scope() as session:
@@ -75,6 +83,7 @@ class UserDao(BaseDao):
 
 
 class CommandDao(BaseDao):
+    entity_clazz = Command
 
     def add(self, id: int, name: str) -> None:
         with self.conn.session_scope() as session:
@@ -82,19 +91,7 @@ class CommandDao(BaseDao):
             session.add(obj)
 
 
-class StatisticsDao:
-
-    def _asdict(self, obj):
-        return {
-            c.key: getattr(obj, c.key)
-            for c in inspect(obj).mapper.column_attrs
-        }
-
-    def __init__(self, conn: DataBaseConnector, entity_clazz):
-        assert conn is not None, "Connection must be not null!"
-        assert entity_clazz is not None, "Entity clazz must be not null!"
-        self.conn = conn
-        self.entity_clazz = entity_clazz
+class StatisticsDao(BaseDao):
 
     def get_all(self) -> List[Dict[str, Any]]:
         with self.conn.session_scope() as session:
@@ -103,7 +100,10 @@ class StatisticsDao:
 
     def increment(self, user_id: int, command_id: int) -> None:
         with self.conn.session_scope() as session:
-            obj = session.query(self.entity_clazz).filter(user_id == user_id).filter(command_id == command_id).first()
+            obj = session.query(self.entity_clazz) \
+                .filter(user_id == user_id) \
+                .filter(command_id == command_id) \
+                .first()
             if obj:
                 obj.count += 1
             else:
@@ -112,7 +112,7 @@ class StatisticsDao:
 
 if __name__ == '__main__':
     conn = DataBaseConnector('sqlite:///:memory:')
-    userDao = UserDao(conn, User)
+    userDao = UserDao(conn)
     print(userDao.get_all())
     userDao.add(1, 'hello', 'first', 'second')
     print(userDao.get_all())
@@ -121,13 +121,13 @@ if __name__ == '__main__':
     print(userDao.get_all())
     print(userDao.get_by_id(first_user_id))
 
-    commandDao = CommandDao(conn, Command)
+    commandDao = CommandDao(conn)
     commandDao.add(1, 'help')
     commandDao.add(2, 'say')
 
     print(commandDao.get_all())
 
-    statDao = StatisticsDao(conn, conn.AutoMappedBase.classes.statistics)
+    statDao = StatisticsDao(conn)
     print(statDao.get_all())
     statDao.increment(first_user_id, 1)
     statDao.increment(first_user_id, 1)

@@ -1,17 +1,8 @@
 from sqlalchemy import Column, BigInteger, String, Sequence, ForeignKey, Table, Integer, inspect
+from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import relationship
 
-from sqlalchemy.ext.declarative import as_declarative
-
-
-@as_declarative()
-class Base:
-    def _asdict(self):
-        return {
-            c.key: getattr(self, c.key)
-            for c in inspect(self).mapper.column_attrs
-        }
-
+Base = automap_base()
 
 Statistics = Table(
     'statistics', Base.metadata,
@@ -50,4 +41,3 @@ class Command(Base):
         secondary=Statistics,
         back_populates='commands'
     )
-
