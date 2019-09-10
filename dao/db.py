@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, inspect
 from contextlib import contextmanager
 from sqlalchemy.orm import sessionmaker
 
-from models import Base, User, Command, Statistics
+from .models import Base, User, Command
 from typing import Any, Dict, List, Optional
 
 
@@ -13,8 +13,6 @@ class DataBaseConnector:
 
         self.base = Base
         self.base.metadata.create_all(self._engine)
-
-        # workaround for automap
         self.base.prepare(self._engine, reflect=True)
 
     @contextmanager
@@ -32,9 +30,7 @@ class DataBaseConnector:
 
 
 class BaseDao:
-    @property
-    def entity_clazz(self):
-        return self.conn.base.classes.statistics
+    entity_clazz = None
 
     def __init__(self, conn: DataBaseConnector):
         assert conn is not None, "Connection must be not null!"
@@ -90,8 +86,18 @@ class CommandDao(BaseDao):
             obj = self.entity_clazz(id=id, name=name)
             session.add(obj)
 
+    def get_by_name(self, name: str):
+        with self.conn.session_scope() as session:
+            obj = session.query(self.entity_clazz).filter(name == name).one()
+            if obj:
+                return self._asdict(obj)
+
 
 class StatisticsDao(BaseDao):
+
+    @property
+    def entity_clazz(self):
+        return self.conn.base.classes.statistics
 
     def get_all(self) -> List[Dict[str, Any]]:
         with self.conn.session_scope() as session:
