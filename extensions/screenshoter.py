@@ -6,9 +6,6 @@ from requests import HTTPError
 from PIL import Image
 from io import BytesIO
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
 BASE_URL = 'http://api.screenshotlayer.com/api/capture'
 
 

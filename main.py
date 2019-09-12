@@ -17,7 +17,7 @@ from dao.db import DataBaseConnector, UserDao, CommandDao, StatisticsDao
 from extensions.text2speech import generate_audio
 from extensions.screenshoter import take_screenshot
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 

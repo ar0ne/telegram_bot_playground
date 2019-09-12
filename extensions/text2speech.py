@@ -8,9 +8,6 @@ import logging
 from tempfile import NamedTemporaryFile
 from typing import BinaryIO
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
 
 def generate_audio(language: str = 'ru-RU', voice: str = 'Maxim', text: str = None) -> BinaryIO:
     client = boto3.client('polly')
@@ -34,8 +31,3 @@ def generate_audio(language: str = 'ru-RU', voice: str = 'Maxim', text: str = No
             except IOError as error:
                 # Could not write to file, exit gracefully
                 logging.error(error)
-
-
-if __name__ == '__main__':
-    # generate_audio('Что ты от меня хочешь, кожанный ублюдок!')
-    pass
