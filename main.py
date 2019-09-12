@@ -3,8 +3,8 @@ import os
 
 import logging
 import random
-import json
 import threading
+import re
 
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
@@ -67,7 +67,8 @@ class TelegramBot:
             user = self.userDao.get_by_id(user_id)
 
             if user:
-                command_name = args[0].message.text.replace('/', '')
+                command_line = args[0].message.text
+                command_name = re.findall('\/(\w+)[ ]{0,1}', command_line)[0]
                 command = self.cmdDao.get_by_name(command_name)
                 if command:
                     self.statDao.increment(user['id'], command['id'])

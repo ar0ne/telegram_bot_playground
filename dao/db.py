@@ -32,9 +32,9 @@ class DataBaseConnector:
 
 
 class BaseDao:
-    def __init__(self, conn: DataBaseConnector):
-        assert conn is not None, "Connection must be not null!"
-        self.conn = conn
+    def __init__(self, connector: DataBaseConnector = None):
+        assert connector is not None, "Connection must be not null!"
+        self.conn = connector
 
     @property
     def entity_clazz(self):
@@ -111,8 +111,8 @@ class StatisticsDao(BaseDao):
     def increment(self, user_id: int, command_id: int) -> None:
         with self.conn.session_scope() as session:
             obj = session.query(self.entity_clazz) \
-                .filter(user_id == user_id) \
-                .filter(command_id == command_id) \
+                .filter_by(command_id=command_id) \
+                .filter_by(user_id=user_id) \
                 .first()
             if obj:
                 obj.count += 1
