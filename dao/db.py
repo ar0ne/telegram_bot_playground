@@ -109,7 +109,7 @@ class StatisticsDao(BaseDao):
 
     def get_all(self) -> List[Dict[str, Any]]:
         with self.conn.session_scope() as session:
-            objects = session.query(UserDao.entity_clazz.id,
+            statistics = session.query(UserDao.entity_clazz.id,
                                     UserDao.entity_clazz.username,
                                     CommandDao.entity_clazz.name,
                                     self.entity_clazz.count) \
@@ -119,11 +119,17 @@ class StatisticsDao(BaseDao):
                 .all()
 
             users = {}
-            for r in objects:
-                if r[0] not in users:
-                    users[r[0]] = {'id': r[0], 'username': r[1], 'statistics': []}
+            for stat in statistics:
+                if stat[0] not in users:
+                    users[stat[0]] = {
+                        'id': stat[0],
+                        'username': stat[1],
+                        'statistics': [
+                            {'cmd': stat[2], 'count': stat[3]}
+                        ]
+                    }
                 else:
-                    users[r[0]]['statistics'].append({'cmd': r[2], 'count': r[3]})
+                    users[stat[0]]['statistics'].append({'cmd': stat[2], 'count': stat[3]})
 
             return list(users.values())
 

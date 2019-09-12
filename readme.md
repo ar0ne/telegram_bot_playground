@@ -29,3 +29,14 @@ See help message.
 
 Bot responds with a screenshot of requested url.
 
+## /`statistics_cmd`
+
+Show statistics of command usage by users. Keep in mind, bot will not capture statistic for command if it is not present in database (table `commands`).
+First of all, you need to add them manually.
+
+## /`secret_exit_cmd`
+
+You can setup secret command for emergency stop of the bot.
+
+
+*Note*: You can specify own command names via environment variables, e.g. override `/stat` and `/secret_exit_cmd`.

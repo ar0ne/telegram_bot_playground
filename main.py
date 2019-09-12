@@ -30,7 +30,7 @@ class TelegramBot:
         self.SAY_CMD = 'say'
         self.BIBA_CMD = 'biba'
         self.HELP_CMD = 'help'
-        self.STATISTICS_CMD = 'stat'
+        self.STATISTICS_CMD = os.getenv('STATISTICS_COMMAND')
         self.EXIT_CMD = os.getenv('EXIT_COMMAND')
         self.SCREENSHOT_CMD = 'shot'
 
@@ -64,22 +64,23 @@ class TelegramBot:
     def log_event(fn):
         @wraps(fn)
         def wrapped(self, *args, **kwargs):
-            user_id = args[0].message.from_user.id
-            user = self.userDao.get_by_id(user_id)
+            msg_text = args[0].message.text
+            parsed_commands = re.findall("/(\w+)[ ]?", msg_text)
+            command = self.cmdDao.get_by_name(parsed_commands[0]) if len(parsed_commands) == 1 else None
 
-            if user:
-                command_line = args[0].message.text
-                command_name = re.findall('\/(\w+)[ ]{0,1}', command_line)[0]
-                command = self.cmdDao.get_by_name(command_name)
-                if command:
+            if command:
+                user_id = args[0].message.from_user.id
+                user = self.userDao.get_by_id(user_id)
+
+                if user:
                     self.statDao.increment(user['id'], command['id'])
-            else:
-                self.userDao.add(
-                    id=user_id,
-                    username=args[0].message.from_user.username,
-                    first_name=args[0].message.from_user.first_name,
-                    last_name=args[0].message.from_user.last_name
-                )
+                else:
+                    self.userDao.add(
+                        id=user_id,
+                        username=args[0].message.from_user.username,
+                        first_name=args[0].message.from_user.first_name,
+                        last_name=args[0].message.from_user.last_name
+                    )
 
             fn(self, *args, **kwargs)
 
