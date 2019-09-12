@@ -7,7 +7,9 @@ from typing import Any, Dict, List, Optional
 
 
 class DataBaseConnector:
-    def __init__(self, url: str):
+    def __init__(self, url: str = None):
+        assert url is not None, "Can't create DataBase connector"
+
         self._engine = create_engine(url, echo=True)
         self.Session = sessionmaker(bind=self._engine)
 
@@ -30,11 +32,13 @@ class DataBaseConnector:
 
 
 class BaseDao:
-    entity_clazz = None
-
     def __init__(self, conn: DataBaseConnector):
         assert conn is not None, "Connection must be not null!"
         self.conn = conn
+
+    @property
+    def entity_clazz(self):
+        raise Exception("Entity clazz must be not null!")
 
     def get_all(self) -> List[Dict[str, Any]]:
         with self.conn.session_scope() as session:
@@ -88,7 +92,7 @@ class CommandDao(BaseDao):
 
     def get_by_name(self, name: str):
         with self.conn.session_scope() as session:
-            obj = session.query(self.entity_clazz).filter(name == name).one()
+            obj = session.query(self.entity_clazz).filter_by(name=name).first()
             if obj:
                 return self._asdict(obj)
 

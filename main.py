@@ -100,10 +100,12 @@ class TelegramBot:
         else:
             context.bot.send_message(chat_id=update.message.chat_id, text=f'Попроси лучше{ending}')
 
+    @log_event
     def bibametr_cmd(self, update, context):
         context.bot.send_message(chat_id=update.message.chat_id,
                                  text=f"Твоя биба {random.randrange(3, 26)} сантиметров!")
 
+    @log_event
     def help_cmd(self, update, context):
         commands = [
             self.SAY_CMD,
@@ -114,14 +116,12 @@ class TelegramBot:
         ]
         context.bot.send_message(chat_id=update.message.chat_id, text=f"Умею и могу - {', '.join(commands)}")
 
+    @log_event
     def statistics_cmd(self, update, context):
         context.bot.send_message(chat_id=update.message.chat_id,
                                  text=f"Эти ублюдки мне должны:\n{self.statDao.get_all()}")
 
-    def shutdown(self):
-        self._updater.stop()
-        self._updater.is_idle = False
-
+    @log_event
     def screenshot_cmd(self, update, context):
         if len(context.args) == 1:
             url = context.args[0]
@@ -142,9 +142,15 @@ class TelegramBot:
                 text="Не понял, повтори."
             )
 
+    @log_event
     def secret_exit_cmd(self, update, context):
         context.bot.send_message(chat_id=update.message.chat_id, text="ня-пока")
-        threading.Thread(target=self.shutdown).start()
+        threading.Thread(target=self._shutdown).start()
+
+    @log_event
+    def _shutdown(self):
+        self._updater.stop()
+        self._updater.is_idle = False
 
 
 def main():
