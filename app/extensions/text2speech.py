@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 
 import boto3
 
@@ -10,7 +11,7 @@ from typing import BinaryIO
 
 
 def generate_audio(language: str = 'ru-RU', voice: str = 'Maxim', text: str = None) -> BinaryIO:
-    client = boto3.client('polly')
+    client = boto3.client('polly', region_name=os.getenv("AWS_DEFAULT_REGION"))
 
     response = client.synthesize_speech(
         Engine='standard',

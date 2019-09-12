@@ -25,6 +25,10 @@ Using last decisions in machine learning and neural networks area, bot tries to 
 
 Bot responds with a screenshot of requested url.
 
+## /ping
+
+Health check command.
+
 ## /help
 
 See help message.
@@ -40,3 +44,9 @@ You can setup secret command for emergency stop of the bot.
 
 
 *Note*: You can specify own command names via environment variables, e.g. override `/stat` and `/secret_exit_cmd`.
+
+
+# Deployment
+
+1. Install ansible on your host and destination server
+2. `cd playbook; ansible-playbook main.yml`

@@ -29,6 +29,7 @@ class TelegramBot:
 
         self.SAY_CMD = 'say'
         self.BIBA_CMD = 'biba'
+        self.PING_CMD = 'ping'
         self.HELP_CMD = 'help'
         self.STATISTICS_CMD = os.getenv('STATISTICS_COMMAND')
         self.EXIT_CMD = os.getenv('EXIT_COMMAND')
@@ -42,6 +43,7 @@ class TelegramBot:
 
     def init_handlers(self):
         bibametr_handler = CommandHandler(self.BIBA_CMD, self.bibametr_cmd)
+        ping_handler = CommandHandler(self.PING_CMD, self.ping_cmd)
         say_handler = CommandHandler(self.SAY_CMD, self.say_cmd)
         help_handler = CommandHandler(self.HELP_CMD, self.help_cmd)
         statistics_handler = CommandHandler(self.STATISTICS_CMD, self.statistics_cmd)
@@ -50,6 +52,7 @@ class TelegramBot:
         screenshot_handler = CommandHandler(self.SCREENSHOT_CMD, self.screenshot_cmd)
 
         self._dispatcher.add_handler(bibametr_handler)
+        self._dispatcher.add_handler(ping_handler)
         self._dispatcher.add_handler(say_handler)
         self._dispatcher.add_handler(help_handler)
         self._dispatcher.add_handler(statistics_handler)
@@ -152,6 +155,9 @@ class TelegramBot:
         threading.Thread(target=self._shutdown).start()
 
     @log_event
+    def ping_cmd(self, update, context):
+        context.bot.send_message(chat_id=update.message.chat_id, text="pong")
+
     def _shutdown(self):
         self._updater.stop()
         self._updater.is_idle = False
