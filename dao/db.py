@@ -53,7 +53,9 @@ class BaseDao:
 
     def delete(self, id: int) -> None:
         with self.conn.session_scope() as session:
-            obj = session.query(self.entity_clazz).filter(self.entity_clazz.id == id).first()
+            obj = session.query(self.entity_clazz) \
+                .filter(self.entity_clazz.id == id) \
+                .first()
             session.delete(obj)
 
     def _asdict(self, obj):
@@ -92,7 +94,9 @@ class CommandDao(BaseDao):
 
     def get_by_name(self, name: str):
         with self.conn.session_scope() as session:
-            obj = session.query(self.entity_clazz).filter_by(name=name).first()
+            obj = session.query(self.entity_clazz) \
+                .filter(self.entity_clazz.name == name) \
+                .first()
             if obj:
                 return self._asdict(obj)
 
@@ -105,8 +109,23 @@ class StatisticsDao(BaseDao):
 
     def get_all(self) -> List[Dict[str, Any]]:
         with self.conn.session_scope() as session:
-            objects = session.query(self.entity_clazz).all()
-            return [self._asdict(obj) for obj in objects]
+            objects = session.query(UserDao.entity_clazz.id,
+                                    UserDao.entity_clazz.username,
+                                    CommandDao.entity_clazz.name,
+                                    self.entity_clazz.count) \
+                .join(UserDao.entity_clazz) \
+                .join(CommandDao.entity_clazz) \
+                .order_by(UserDao.entity_clazz.id) \
+                .all()
+
+            users = {}
+            for r in objects:
+                if r[0] not in users:
+                    users[r[0]] = {'id': r[0], 'username': r[1], 'statistics': []}
+                else:
+                    users[r[0]]['statistics'].append({'cmd': r[2], 'count': r[3]})
+
+            return list(users.values())
 
     def increment(self, user_id: int, command_id: int) -> None:
         with self.conn.session_scope() as session:

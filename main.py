@@ -5,6 +5,7 @@ import logging
 import random
 import threading
 import re
+import json
 
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
@@ -120,7 +121,7 @@ class TelegramBot:
     @log_event
     def statistics_cmd(self, update, context):
         context.bot.send_message(chat_id=update.message.chat_id,
-                                 text=f"Эти ублюдки мне должны:\n{self.statDao.get_all()}")
+                                 text=f"Эти ублюдки мне должны:\n{json.dumps(self.statDao.get_all(), indent=4, sort_keys=True)}")
 
     @log_event
     def screenshot_cmd(self, update, context):
