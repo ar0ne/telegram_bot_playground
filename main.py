@@ -98,6 +98,7 @@ class TelegramBot:
             audio = generate_audio(text=message)
             if audio:
                 context.bot.send_voice(chat_id=update.message.chat_id, voice=open(audio.name, 'rb'))
+                os.unlink(audio.name)
             else:
                 context.bot.send_message(chat_id=update.message.chat_id, text="рвфцвьцфьтвоцфв")
         else:

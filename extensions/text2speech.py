@@ -5,6 +5,7 @@ import boto3
 from contextlib import closing
 
 import logging
+from tempfile import NamedTemporaryFile
 from typing import BinaryIO
 
 logging.basicConfig(level=logging.DEBUG,
@@ -27,7 +28,7 @@ def generate_audio(language: str = 'ru-RU', voice: str = 'Maxim', text: str = No
         with closing(response["AudioStream"]) as stream:
             try:
                 # Open a file for writing the output as a binary stream
-                with open("temp.mp3", "wb") as file:
+                with NamedTemporaryFile(delete=False) as file:
                     file.write(stream.read())
                     return file
             except IOError as error:

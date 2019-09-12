@@ -13,7 +13,7 @@ Boto3 will check these environment variables for credentials:
 
 # Supported commands:
 
-## /say <text>
+## /say `<text>`
 
 This command generate voice audio from `text` which you send to bot. Under the hood, bot uses AWS Polly service which does text to speech transformation.
 
@@ -21,13 +21,13 @@ This command generate voice audio from `text` which you send to bot. Under the h
 
 Using last decisions in machine learning and neural networks area, bot tries to predict your `biba` size.
 
+## /shot `<url>`
+
+Bot responds with a screenshot of requested url.
+
 ## /help
 
 See help message.
-
-## /shot <url>
-
-Bot responds with a screenshot of requested url.
 
 ## /`statistics_cmd`
 
