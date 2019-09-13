@@ -14,8 +14,7 @@ from dotenv import load_dotenv
 from functools import wraps
 
 from dao.db import DataBaseConnector, UserDao, CommandDao, StatisticsDao
-from extensions.text2speech import generate_audio
-from extensions.screenshoter import take_screenshot
+from extensions import dog_photo, cat_photo, text2speech
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -31,6 +30,8 @@ class TelegramBot:
         self.BIBA_CMD = 'biba'
         self.PING_CMD = 'ping'
         self.HELP_CMD = 'help'
+        self.WOOF_CMD = 'woof'
+        self.MEOW_CMD = 'meow'
         self.STATISTICS_CMD = os.getenv('STATISTICS_COMMAND')
         self.EXIT_CMD = os.getenv('EXIT_COMMAND')
         self.SCREENSHOT_CMD = 'shot'
@@ -44,6 +45,8 @@ class TelegramBot:
     def init_handlers(self):
         bibametr_handler = CommandHandler(self.BIBA_CMD, self.bibametr_cmd)
         ping_handler = CommandHandler(self.PING_CMD, self.ping_cmd)
+        woof_handler = CommandHandler(self.WOOF_CMD, self.woof_cmd)
+        meow_handler = CommandHandler(self.MEOW_CMD, self.meow_cmd)
         say_handler = CommandHandler(self.SAY_CMD, self.say_cmd)
         help_handler = CommandHandler(self.HELP_CMD, self.help_cmd)
         statistics_handler = CommandHandler(self.STATISTICS_CMD, self.statistics_cmd)
@@ -53,6 +56,8 @@ class TelegramBot:
 
         self._dispatcher.add_handler(bibametr_handler)
         self._dispatcher.add_handler(ping_handler)
+        self._dispatcher.add_handler(woof_handler)
+        self._dispatcher.add_handler(meow_handler)
         self._dispatcher.add_handler(say_handler)
         self._dispatcher.add_handler(help_handler)
         self._dispatcher.add_handler(statistics_handler)
@@ -98,7 +103,7 @@ class TelegramBot:
         draft_message = ' '.join(context.args).strip()
         if 0 < len(draft_message) < 250:
             message = f"{draft_message}{ending}"
-            audio = generate_audio(text=message)
+            audio = text2speech.generate_audio(text=message)
             if audio:
                 context.bot.send_voice(chat_id=update.message.chat_id, voice=open(audio.name, 'rb'))
                 os.unlink(audio.name)
@@ -120,19 +125,24 @@ class TelegramBot:
             self.HELP_CMD,
             self.STATISTICS_CMD,
             self.SCREENSHOT_CMD,
+            self.MEOW_CMD,
+            self.WOOF_CMD,
+            self.PING_CMD
         ]
-        context.bot.send_message(chat_id=update.message.chat_id, text=f"Умею и могу - {', '.join(commands)}")
+        context.bot.send_message(chat_id=update.message.chat_id, text=f"Умею и могу - /{', /'.join(commands)}")
 
     @log_event
     def statistics_cmd(self, update, context):
-        context.bot.send_message(chat_id=update.message.chat_id,
-                                 text=f"Эти ублюдки мне должны:\n{json.dumps(self.statDao.get_all(), indent=4, sort_keys=True)}")
+        context.bot.send_message(
+            chat_id=update.message.chat_id,
+            text=f"Твои должники:\n{json.dumps(self.statDao.get_all(), indent=4, sort_keys=True)}"
+        )
 
     @log_event
     def screenshot_cmd(self, update, context):
         if len(context.args) == 1:
             url = context.args[0]
-            screen = take_screenshot(url)
+            screen = screenshoter.take_screenshot(url)
             if screen:
                 context.bot.send_photo(
                     chat_id=update.message.chat_id,
@@ -157,6 +167,14 @@ class TelegramBot:
     @log_event
     def ping_cmd(self, update, context):
         context.bot.send_message(chat_id=update.message.chat_id, text="pong")
+
+    @log_event
+    def woof_cmd(self, update, context):
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=dog_photo.get_photo_url())
+
+    @log_event
+    def meow_cmd(self, update, context):
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=cat_photo.get_photo_url())
 
     def _shutdown(self):
         self._updater.stop()

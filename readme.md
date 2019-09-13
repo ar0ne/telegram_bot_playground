@@ -42,6 +42,14 @@ First of all, you need to add them manually.
 
 You can setup secret command for emergency stop of the bot.
 
+## /woof
+
+Get random doggy photo
+
+## /meow
+
+Get random kitty photo.
+
 
 *Note*: You can specify own command names via environment variables, e.g. override `/stat` and `/secret_exit_cmd`.
 
