@@ -56,5 +56,17 @@ Get random kitty photo.
 
 # Deployment
 
-1. Install ansible on your host and destination server
-2. `cd playbook; ansible-playbook main.yml`
+* Install ansible on your host and destination server
+
+* Add group to `/etc/ansible/hosts`
+
+E.g. 
+
+```
+[telegram_bot_ec2]
+your_ec2_instance.amazonaws.com
+```
+
+* Run playbook:
+
+`$ cd playbook; ansible-playbook main.yml`
