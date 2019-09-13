@@ -48,6 +48,6 @@
     - name: Run supervisor
       supervisorctl:
        name: 'bot_app'
-       state: present
+       state: started
        config: /etc/supervisor/supervisord.conf
 
