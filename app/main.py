@@ -177,8 +177,8 @@ class TelegramBot:
     @log_event
     def secret_exit_cmd(self, update, context):
         self.is_running = not self.is_running
-        context.bot.send_message(chat_id=update.message.chat_id, text="ня-пока")
-        threading.Thread(target=self._shutdown).start()
+        text = 'ня-пока' if not self.is_running else 'ня-привет'
+        context.bot.send_message(chat_id=update.message.chat_id, text=text)
 
     @command
     @log_event
@@ -194,11 +194,6 @@ class TelegramBot:
     @log_event
     def meow_cmd(self, update, context):
         context.bot.send_photo(chat_id=update.message.chat_id, photo=cat_photo.get_photo_url())
-
-    def _shutdown(self):
-        self.is_running = False
-        self._updater.stop()
-        self._updater.is_idle = False
 
 
 def main():
