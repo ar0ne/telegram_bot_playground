@@ -26,6 +26,8 @@ class TelegramBot:
         self._updater = Updater(token=token, use_context=True)
         self._dispatcher = self._updater.dispatcher
 
+        self.is_running = True  # since we use supervisor, we can't just turn off application
+
         self.SAY_CMD = 'say'
         self.BIBA_CMD = 'biba'
         self.PING_CMD = 'ping'
@@ -94,9 +96,18 @@ class TelegramBot:
 
         return wrapped
 
+    def command(fn):
+        @wraps(fn)
+        def wrapper(self, *args, **kwargs):
+            if self.is_running:
+                fn(self, *args, **kwargs)
+
+        return wrapper
+
     def unknown_cmd(self, update, context):
         context.bot.send_message(chat_id=update.message.chat_id, text="Твоя моя не пониматъ.")
 
+    @command
     @log_event
     def say_cmd(self, update, context):
         ending = ', кожаный ублюдок!'
@@ -112,11 +123,13 @@ class TelegramBot:
         else:
             context.bot.send_message(chat_id=update.message.chat_id, text=f'Попроси лучше{ending}')
 
+    @command
     @log_event
     def bibametr_cmd(self, update, context):
         context.bot.send_message(chat_id=update.message.chat_id,
                                  text=f"Твоя биба {random.randrange(3, 26)} сантиметров!")
 
+    @command
     @log_event
     def help_cmd(self, update, context):
         commands = [
@@ -131,6 +144,7 @@ class TelegramBot:
         ]
         context.bot.send_message(chat_id=update.message.chat_id, text=f"Умею и могу - /{', /'.join(commands)}")
 
+    @command
     @log_event
     def statistics_cmd(self, update, context):
         context.bot.send_message(
@@ -138,6 +152,7 @@ class TelegramBot:
             text=f"Твои должники:\n{json.dumps(self.statDao.get_all(), indent=4, sort_keys=True)}"
         )
 
+    @command
     @log_event
     def screenshot_cmd(self, update, context):
         if len(context.args) == 1:
@@ -161,22 +176,27 @@ class TelegramBot:
 
     @log_event
     def secret_exit_cmd(self, update, context):
+        self.is_running = not self.is_running
         context.bot.send_message(chat_id=update.message.chat_id, text="ня-пока")
         threading.Thread(target=self._shutdown).start()
 
+    @command
     @log_event
     def ping_cmd(self, update, context):
         context.bot.send_message(chat_id=update.message.chat_id, text="pong")
 
+    @command
     @log_event
     def woof_cmd(self, update, context):
         context.bot.send_photo(chat_id=update.message.chat_id, photo=dog_photo.get_photo_url())
 
+    @command
     @log_event
     def meow_cmd(self, update, context):
         context.bot.send_photo(chat_id=update.message.chat_id, photo=cat_photo.get_photo_url())
 
     def _shutdown(self):
+        self.is_running = False
         self._updater.stop()
         self._updater.is_idle = False
 

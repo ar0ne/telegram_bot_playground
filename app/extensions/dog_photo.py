@@ -1,9 +1,11 @@
 import re
 import requests
 
+BASE_URL = 'https://random.dog/woof.json'
+
 
 def get_url() -> str:
-    response = requests.get('https://random.dog/woof.json')
+    response = requests.get(BASE_URL)
     return response.json()['url']
 
 

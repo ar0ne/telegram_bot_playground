@@ -1,9 +1,11 @@
 import re
 import requests
 
+BASE_URL = 'http://aws.random.cat/meow'
+
 
 def get_url() -> str:
-    response = requests.get('http://aws.random.cat/meow')
+    response = requests.get(BASE_URL)
     return response.json()['file']
 
 
