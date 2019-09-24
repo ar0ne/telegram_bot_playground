@@ -3,7 +3,6 @@ import os
 
 import logging
 import random
-import threading
 import re
 import json
 
