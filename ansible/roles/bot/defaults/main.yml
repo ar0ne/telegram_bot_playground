@@ -1,0 +1,4 @@
+---
+dest_path: /
+app_dir_path: /app
+app_service_name: bot_app

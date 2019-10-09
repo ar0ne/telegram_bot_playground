@@ -3,3 +3,7 @@
 .vscode/*
 .env
 *.sqlite
+
+ansible/vars/*
+!ansible/vars
+!ansible/vars/*.example.yml

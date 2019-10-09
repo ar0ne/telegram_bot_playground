@@ -1,0 +1,8 @@
+---
+- hosts: telegram_bot_ec2
+  remote_user: ubuntu
+  become: true
+  become_method: sudo
+  gather_facts: false
+  roles:
+    - bot

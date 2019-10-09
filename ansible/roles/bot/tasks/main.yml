@@ -1,0 +1,40 @@
+---
+- name: Install packages
+  apt:
+    name:
+      - supervisor
+      - python3.7
+      - python3-pip
+      - git
+      - virtualenv
+    update_cache: yes
+
+- name: Install "pipenv"
+  pip:
+    name: pipenv
+
+- name: Copy application to remote server
+  synchronize:
+    src: '{{ playbook_dir.split("/")[0:-1] | join("/") }}/app'
+    dest: '{{ dest_path }}'
+
+- name: Copy supervisor config
+  copy:
+    src: supervisord.conf
+    dest: /etc/supervisor/conf.d/app.conf
+
+- name: Setup pipenv
+  command: pipenv install
+  args:
+    chdir: "{{ app_dir_path }}"
+
+- name: Start supervisor
+  service:
+    name: supervisor
+    state: started
+
+- name: Run supervisor
+  supervisorctl:
+    name: '{{ app_service_name }}'
+    state: started
+    config: /etc/supervisor/supervisord.conf

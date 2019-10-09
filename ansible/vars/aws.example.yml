@@ -1,0 +1,8 @@
+---
+keypair: ''
+instance_type: t2.micro
+security_group: ''
+# Ubuntu 18.04 LTS
+image: ami-06f2f779464715dc5
+region: us-west-2
+subnet_id: ''
