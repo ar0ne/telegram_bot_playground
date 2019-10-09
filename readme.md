@@ -69,4 +69,11 @@ your_ec2_instance.amazonaws.com
 
 * Run playbook:
 
-`$ cd playbook; ansible-playbook main.yml`
+```
+$ cd ansible
+$ ansible-playbook main.yml
+```
+
+* Playbooks:
+    - `main` - deploy and start application on target server
+    - `ec2` - create and launch new ec2 instance
