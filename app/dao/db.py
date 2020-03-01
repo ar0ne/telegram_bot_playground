@@ -7,7 +7,10 @@ from typing import Any, Dict, List, Optional
 
 
 class DataBaseConnector:
-    def __init__(self, url: str = None):
+    def __init__(
+            self,
+            url: Optional[str] = None
+    ) -> None:
         assert url is not None, "Can't create DataBase connector"
 
         self._engine = create_engine(url, echo=True)
@@ -32,7 +35,7 @@ class DataBaseConnector:
 
 
 class BaseDao:
-    def __init__(self, connector: DataBaseConnector = None):
+    def __init__(self, connector: DataBaseConnector = None) -> None:
         assert connector is not None, "Connection must be not null!"
         self.conn = connector
 
@@ -58,7 +61,7 @@ class BaseDao:
                 .first()
             session.delete(obj)
 
-    def _asdict(self, obj):
+    def _asdict(self, obj) -> Dict:
         return {
             c.key: getattr(obj, c.key)
             for c in inspect(obj).mapper.column_attrs
@@ -68,13 +71,24 @@ class BaseDao:
 class UserDao(BaseDao):
     entity_clazz = User
 
-    def add(self, id: int, username: str, first_name: str, last_name: str) -> None:
+    def add(
+            self,
+            id: int,
+            username: Optional[str] = None,
+            first_name: Optional[str] = None,
+            last_name: Optional[str] = None
+    ) -> None:
         with self.conn.session_scope() as session:
             user = User(id=id, username=username, first_name=first_name, last_name=last_name)
             session.add(user)
 
-    def update(self, id: int, username: str = None, first_name: str = None,
-               last_name: str = None) -> None:
+    def update(
+            self,
+            id: int,
+            username: Optional[str] = None,
+            first_name: Optional[str] = None,
+            last_name: Optional[str] = None,
+    ) -> None:
         with self.conn.session_scope() as session:
             user = session.query(User).get(id)
             if user:
@@ -88,12 +102,19 @@ class UserDao(BaseDao):
 class CommandDao(BaseDao):
     entity_clazz = Command
 
-    def add(self, id: int, name: str) -> None:
+    def add(
+            self,
+            id: int,
+            name: str
+    ) -> None:
         with self.conn.session_scope() as session:
             obj = self.entity_clazz(id=id, name=name)
             session.add(obj)
 
-    def get_by_name(self, name: str):
+    def get_by_name(
+            self,
+            name: str
+    ) -> Optional[Dict]:
         with self.conn.session_scope() as session:
             obj = session.query(self.entity_clazz) \
                 .filter(self.entity_clazz.name == name) \
@@ -119,7 +140,7 @@ class StatisticsDao(BaseDao):
                 .order_by(UserDao.entity_clazz.id) \
                 .all()
 
-            users = {}
+            users: Dict = {}
             for stat in statistics:
                 if stat[0] not in users:
                     users[stat[0]] = {

@@ -1,8 +1,9 @@
 from sqlalchemy import Column, BigInteger, String, Sequence, ForeignKey, Table, Integer
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import relationship
+from typing import Any
 
-Base = automap_base()
+Base = automap_base()  # type: Any
 
 Statistics = Table(
     'statistics', Base.metadata,

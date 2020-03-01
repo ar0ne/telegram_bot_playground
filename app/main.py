@@ -11,6 +11,7 @@ from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 from dotenv import load_dotenv
 from functools import wraps
+from typing import Callable, Any, TypeVar, cast
 
 from app.dao.db import DataBaseConnector, UserDao, CommandDao, StatisticsDao
 from app.extensions import dog_photo, cat_photo, text2speech, screenshoter
@@ -18,9 +19,14 @@ from app.extensions import dog_photo, cat_photo, text2speech, screenshoter
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+FuncType = Callable[..., Any]
+F = TypeVar('F', bound=FuncType)  # pylint: disable=invalid-name
+
 
 class TelegramBot:
     def __init__(self, token: str, db_url: str):
+        assert token is not None, "Token must be not None"
+        assert db_url is not None, "Database url must be not None"
         self._token = token
         self._updater = Updater(token=token, use_context=True)
         self._dispatcher = self._updater.dispatcher
@@ -33,7 +39,7 @@ class TelegramBot:
         self.HELP_CMD = 'help'
         self.WOOF_CMD = 'woof'
         self.MEOW_CMD = 'meow'
-        self.STATISTICS_CMD = os.getenv('STATISTICS_COMMAND')
+        self.STATISTICS_CMD = os.getenv('STATISTICS_COMMAND') or 'stat'
         self.EXIT_CMD = os.getenv('EXIT_COMMAND')
         self.SCREENSHOT_CMD = 'shot'
 
@@ -70,7 +76,7 @@ class TelegramBot:
         self._updater.start_polling()
         self._updater.idle()
 
-    def log_event(fn):
+    def log_event(fn: F) -> F:
         @wraps(fn)
         def wrapped(self, *args, **kwargs):
             msg_text = args[0].message.text
@@ -95,15 +101,15 @@ class TelegramBot:
 
             fn(self, *args, **kwargs)
 
-        return wrapped
+        return cast(F, wrapped)
 
-    def command(fn):
+    def command(fn: F) -> F:
         @wraps(fn)
         def wrapper(self, *args, **kwargs):
             if self.is_running:
                 fn(self, *args, **kwargs)
 
-        return wrapper
+        return cast(F, wrapper)
 
     def unknown_cmd(self, update, context):
         context.bot.send_message(chat_id=update.message.chat_id, text="Твоя моя не пониматъ.")
@@ -133,7 +139,7 @@ class TelegramBot:
     @command
     @log_event
     def help_cmd(self, update, context):
-        commands = [
+        commands = (
             self.SAY_CMD,
             self.BIBA_CMD,
             self.HELP_CMD,
@@ -141,8 +147,8 @@ class TelegramBot:
             self.SCREENSHOT_CMD,
             self.MEOW_CMD,
             self.WOOF_CMD,
-            self.PING_CMD
-        ]
+            self.PING_CMD,
+        )
         context.bot.send_message(
             chat_id=update.message.chat_id, text=f"Умею и могу - /{', /'.join(commands)}")
 

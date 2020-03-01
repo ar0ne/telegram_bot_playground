@@ -44,6 +44,7 @@ class TestUserDao(BaseDaoTestCase):
 
         updated_user = self.user_dao.get_by_id(user_id)
 
+        self.assertIsNotNone(updated_user)
         self.assertEqual(user_id, updated_user['id'])
         self.assertEqual('updated', updated_user['username'])
         self.assertEqual('first', updated_user['first_name'])
