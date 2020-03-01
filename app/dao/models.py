@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, String, Sequence, ForeignKey, Table, Integer, inspect
+from sqlalchemy import Column, BigInteger, String, Sequence, ForeignKey, Table, Integer
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import relationship
 
@@ -27,7 +27,8 @@ class User(Base):
     )
 
     def __repr__(self):
-        return f"User(id={self.id}, username={self.username}, first_name={self.first_name}, last_name={self.last_name})"
+        return f"User(id={self.id}, username={self.username}, " \
+            f"first_name={self.first_name}, last_name={self.last_name})"
 
 
 class Command(Base):

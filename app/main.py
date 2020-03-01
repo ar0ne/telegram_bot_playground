@@ -12,8 +12,8 @@ from telegram.ext import MessageHandler, Filters
 from dotenv import load_dotenv
 from functools import wraps
 
-from dao.db import DataBaseConnector, UserDao, CommandDao, StatisticsDao
-from extensions import dog_photo, cat_photo, text2speech
+from app.dao.db import DataBaseConnector, UserDao, CommandDao, StatisticsDao
+from app.extensions import dog_photo, cat_photo, text2speech, screenshoter
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -74,8 +74,10 @@ class TelegramBot:
         @wraps(fn)
         def wrapped(self, *args, **kwargs):
             msg_text = args[0].message.text
-            parsed_commands = re.findall("/(\w+)[ ]?", msg_text)
-            command = self.cmdDao.get_by_name(parsed_commands[0]) if len(parsed_commands) == 1 else None
+            parsed_commands = re.findall(r"/(\w+)[ ]?", msg_text)
+            command = None
+            if len(parsed_commands) == 1:
+                command = self.cmdDao.get_by_name(parsed_commands[0])
 
             if command:
                 user_id = args[0].message.from_user.id
@@ -141,7 +143,8 @@ class TelegramBot:
             self.WOOF_CMD,
             self.PING_CMD
         ]
-        context.bot.send_message(chat_id=update.message.chat_id, text=f"Умею и могу - /{', /'.join(commands)}")
+        context.bot.send_message(
+            chat_id=update.message.chat_id, text=f"Умею и могу - /{', /'.join(commands)}")
 
     @command
     @log_event

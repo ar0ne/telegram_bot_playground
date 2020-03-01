@@ -1,13 +1,16 @@
 # import time
 # import threading
 #
-#
 # from datetime import datetime, timedelta
 # from functools import wraps
 #
 #
-# def throttle(seconds: float = 0, minutes: float = 0, hours: float = 0, time_of_last_call: datetime = datetime.min):
+# def throttle(seconds: float = 0,
+#              minutes: float = 0,
+#              hours: float = 0,
+#              time_of_last_call: datetime = datetime.min):
 #     throttle_period = timedelta(seconds=seconds, minutes=minutes, hours=hours)
+#
 #     def throttle_decorator(func):
 #         @wraps(func)
 #         def wrapper(*args, **kwargs):
@@ -30,8 +33,6 @@
 #     print('test_func starting...')
 #     time.sleep(10)
 #     print('test_func finished...')
-#
-#
 #
 #
 # if __name__ == '__main__':

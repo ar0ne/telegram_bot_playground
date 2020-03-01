@@ -24,7 +24,7 @@ class DataBaseConnector:
         try:
             yield session
             session.commit()
-        except:
+        except Exception:
             session.rollback()
             raise
         finally:
@@ -73,7 +73,8 @@ class UserDao(BaseDao):
             user = User(id=id, username=username, first_name=first_name, last_name=last_name)
             session.add(user)
 
-    def update(self, id: int, username: str = None, first_name: str = None, last_name: str = None) -> None:
+    def update(self, id: int, username: str = None, first_name: str = None,
+               last_name: str = None) -> None:
         with self.conn.session_scope() as session:
             user = session.query(User).get(id)
             if user:
@@ -110,9 +111,9 @@ class StatisticsDao(BaseDao):
     def get_all(self) -> List[Dict[str, Any]]:
         with self.conn.session_scope() as session:
             statistics = session.query(UserDao.entity_clazz.id,
-                                    UserDao.entity_clazz.username,
-                                    CommandDao.entity_clazz.name,
-                                    self.entity_clazz.count) \
+                                       UserDao.entity_clazz.username,
+                                       CommandDao.entity_clazz.name,
+                                       self.entity_clazz.count) \
                 .join(UserDao.entity_clazz) \
                 .join(CommandDao.entity_clazz) \
                 .order_by(UserDao.entity_clazz.id) \
@@ -143,15 +144,3 @@ class StatisticsDao(BaseDao):
                 obj.count += 1
             else:
                 session.add(self.entity_clazz(user_id=user_id, command_id=command_id, count=1))
-
-
-if __name__ == '__main__':
-
-
-
-    statDao = StatisticsDao(conn)
-    print(statDao.get_all())
-    statDao.increment(first_user_id, 1)
-    statDao.increment(first_user_id, 1)
-    statDao.increment(first_user_id, 1)
-    print(statDao.get_all())
