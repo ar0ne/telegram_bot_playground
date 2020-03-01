@@ -3,6 +3,10 @@
 .vscode/*
 .env
 *.sqlite
+Pipfile.lock
+.tox/
+.mypy_cache/
+*.egg-info
 
 ansible/vars/*
 !ansible/vars

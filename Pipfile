@@ -4,6 +4,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+mypy = "*"
+flake8 = "*"
+tox = "*"
+tox-pipenv-install = "*"
+pytest = "*"
 
 [packages]
 boto3 = "*"

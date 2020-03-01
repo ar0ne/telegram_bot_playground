@@ -146,21 +146,8 @@ class StatisticsDao(BaseDao):
 
 
 if __name__ == '__main__':
-    conn = DataBaseConnector('sqlite:///:memory:')
-    userDao = UserDao(conn)
-    print(userDao.get_all())
-    userDao.add(1, 'hello', 'first', 'second')
-    print(userDao.get_all())
-    first_user_id = userDao.get_all()[0]['id']
-    userDao.update(id=first_user_id, username='updated')
-    print(userDao.get_all())
-    print(userDao.get_by_id(first_user_id))
 
-    commandDao = CommandDao(conn)
-    commandDao.add(1, 'help')
-    commandDao.add(2, 'say')
 
-    print(commandDao.get_all())
 
     statDao = StatisticsDao(conn)
     print(statDao.get_all())
