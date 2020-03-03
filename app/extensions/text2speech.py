@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 import os
-
+import logging
 import boto3
 
-from contextlib import closing
-
-import logging
-from tempfile import NamedTemporaryFile
 from typing import BinaryIO
+from contextlib import closing
+from tempfile import NamedTemporaryFile
 
 
 def generate_audio(language: str = 'ru-RU', voice: str = 'Maxim', text: str = None) -> BinaryIO:

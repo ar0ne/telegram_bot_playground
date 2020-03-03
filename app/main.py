@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 import os
-
 import logging
 import random
 import re
 import json
 
-from telegram.ext import Updater
-from telegram.ext import CommandHandler
-from telegram.ext import MessageHandler, Filters
+from typing import Callable, Any, TypeVar, cast
 from dotenv import load_dotenv
 from functools import wraps
-from typing import Callable, Any, TypeVar, cast
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 from app.dao.db import DataBaseConnector, UserDao, CommandDao, StatisticsDao
 from app.extensions import dog_photo, cat_photo, text2speech, screenshoter
@@ -25,8 +22,8 @@ F = TypeVar('F', bound=FuncType)  # pylint: disable=invalid-name
 
 class TelegramBot:
     def __init__(self, token: str, db_url: str):
-        assert token is not None, "Token must be not None"
-        assert db_url is not None, "Database url must be not None"
+        assert token, "Token must be not None"
+        assert db_url, "Database url must be not None"
         self._token = token
         self._updater = Updater(token=token, use_context=True)
         self._dispatcher = self._updater.dispatcher
@@ -39,38 +36,30 @@ class TelegramBot:
         self.HELP_CMD = 'help'
         self.WOOF_CMD = 'woof'
         self.MEOW_CMD = 'meow'
-        self.STATISTICS_CMD = os.getenv('STATISTICS_COMMAND') or 'stat'
-        self.EXIT_CMD = os.getenv('EXIT_COMMAND')
+        self.STATISTICS_CMD = os.getenv('STATISTICS_COMMAND', 'stat')
+        self.EXIT_CMD = os.getenv('EXIT_COMMAND', 'bye')
         self.SCREENSHOT_CMD = 'shot'
 
         self.db = DataBaseConnector(db_url)
 
-        self.userDao = UserDao(self.db)
-        self.cmdDao = CommandDao(self.db)
-        self.statDao = StatisticsDao(self.db)
+        self.user_dao = UserDao(self.db)
+        self.cmd_dao = CommandDao(self.db)
+        self.statistic_dao = StatisticsDao(self.db)
 
     def init_handlers(self):
-        bibametr_handler = CommandHandler(self.BIBA_CMD, self.bibametr_cmd)
-        ping_handler = CommandHandler(self.PING_CMD, self.ping_cmd)
-        woof_handler = CommandHandler(self.WOOF_CMD, self.woof_cmd)
-        meow_handler = CommandHandler(self.MEOW_CMD, self.meow_cmd)
-        say_handler = CommandHandler(self.SAY_CMD, self.say_cmd)
-        help_handler = CommandHandler(self.HELP_CMD, self.help_cmd)
-        statistics_handler = CommandHandler(self.STATISTICS_CMD, self.statistics_cmd)
-        unknown_handler = MessageHandler(Filters.command, self.unknown_cmd)
-        secret_exit_handler = CommandHandler(self.EXIT_CMD, self.secret_exit_cmd)
-        screenshot_handler = CommandHandler(self.SCREENSHOT_CMD, self.screenshot_cmd)
-
-        self._dispatcher.add_handler(bibametr_handler)
-        self._dispatcher.add_handler(ping_handler)
-        self._dispatcher.add_handler(woof_handler)
-        self._dispatcher.add_handler(meow_handler)
-        self._dispatcher.add_handler(say_handler)
-        self._dispatcher.add_handler(help_handler)
-        self._dispatcher.add_handler(statistics_handler)
-        self._dispatcher.add_handler(secret_exit_handler)
-        self._dispatcher.add_handler(screenshot_handler)
-        self._dispatcher.add_handler(unknown_handler)
+        for handler in (
+                CommandHandler(self.BIBA_CMD, self.bibametr_cmd),
+                CommandHandler(self.PING_CMD, self.ping_cmd),
+                CommandHandler(self.WOOF_CMD, self.woof_cmd),
+                CommandHandler(self.MEOW_CMD, self.meow_cmd),
+                CommandHandler(self.SAY_CMD, self.say_cmd),
+                CommandHandler(self.HELP_CMD, self.help_cmd),
+                CommandHandler(self.STATISTICS_CMD, self.statistics_cmd),
+                CommandHandler(self.EXIT_CMD, self.secret_exit_cmd),
+                CommandHandler(self.SCREENSHOT_CMD, self.screenshot_cmd),
+                MessageHandler(Filters.command, self.unknown_cmd),
+        ):
+            self._dispatcher.add_handler(handler)
 
     def start(self):
         self._updater.start_polling()
@@ -83,16 +72,16 @@ class TelegramBot:
             parsed_commands = re.findall(r"/(\w+)[ ]?", msg_text)
             command = None
             if len(parsed_commands) == 1:
-                command = self.cmdDao.get_by_name(parsed_commands[0])
+                command = self.cmd_dao.get_by_name(parsed_commands[0])
 
             if command:
                 user_id = args[0].message.from_user.id
-                user = self.userDao.get_by_id(user_id)
+                user = self.user_dao.get_by_id(user_id)
 
                 if user:
-                    self.statDao.increment(user['id'], command['id'])
+                    self.statistic_dao.increment(user['id'], command['id'])
                 else:
-                    self.userDao.add(
+                    self.user_dao.add(
                         id=user_id,
                         username=args[0].message.from_user.username,
                         first_name=args[0].message.from_user.first_name,
@@ -157,7 +146,8 @@ class TelegramBot:
     def statistics_cmd(self, update, context):
         context.bot.send_message(
             chat_id=update.message.chat_id,
-            text=f"Твои должники:\n{json.dumps(self.statDao.get_all(), indent=4, sort_keys=True)}"
+            text=f"Твои должники:\n"
+            f"{json.dumps(self.statistic_dao.get_all(), indent=4, sort_keys=True)}"
         )
 
     @command
@@ -208,8 +198,8 @@ def main():
     load_dotenv()
 
     bot = TelegramBot(
-        token=os.getenv("TELEGRAM_BOT_TOKEN"),
-        db_url=os.getenv("DB_URL")
+        token=os.getenv("TELEGRAM_BOT_TOKEN", ''),
+        db_url=os.getenv("DB_URL", 'sqlite:///:memory:')
     )
     bot.init_handlers()
     bot.start()
