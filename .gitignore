@@ -7,6 +7,9 @@ Pipfile.lock
 .tox/
 .mypy_cache/
 *.egg-info
+.coverage
+.coverage.coverage
+htmlcov/
 
 ansible/vars/*
 !ansible/vars

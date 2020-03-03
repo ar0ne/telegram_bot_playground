@@ -9,9 +9,9 @@ from typing import Any, Dict, List, Optional
 class DataBaseConnector:
     def __init__(
             self,
-            url: Optional[str] = None
+            url: str
     ) -> None:
-        assert url is not None, "Can't create DataBase connector"
+        assert url, "DataBase URL must be not None"
 
         self._engine = create_engine(url, echo=True)
         self.Session = sessionmaker(bind=self._engine)
@@ -36,7 +36,7 @@ class DataBaseConnector:
 
 class BaseDao:
     def __init__(self, connector: DataBaseConnector = None) -> None:
-        assert connector is not None, "Connection must be not null!"
+        assert connector, "Connection must be not null!"
         self.conn = connector
 
     @property
@@ -53,6 +53,7 @@ class BaseDao:
             obj = session.query(self.entity_clazz).get(id)
             if obj:
                 return self._asdict(obj)
+        return None
 
     def delete(self, id: int) -> None:
         with self.conn.session_scope() as session:
@@ -121,6 +122,7 @@ class CommandDao(BaseDao):
                 .first()
             if obj:
                 return self._asdict(obj)
+        return None
 
 
 class StatisticsDao(BaseDao):

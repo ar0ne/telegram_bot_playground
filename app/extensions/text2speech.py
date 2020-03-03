@@ -3,12 +3,20 @@ import os
 import logging
 import boto3
 
-from typing import BinaryIO
+from typing import BinaryIO, Optional
 from contextlib import closing
 from tempfile import NamedTemporaryFile
 
 
-def generate_audio(language: str = 'ru-RU', voice: str = 'Maxim', text: str = None) -> BinaryIO:
+def generate_audio(
+        language: Optional[str] = None,
+        voice: Optional[str] = None,
+        text: str = ''
+) -> Optional[BinaryIO]:
+    """ Transform text into speech and provides audio file (mp3) as binary array """
+    language = language or os.getenv("T2S_LANGUAGE", 'ru-RU')
+    voice = voice or os.getenv("T2S_VOICE", 'Maxim')
+
     client = boto3.client('polly', region_name=os.getenv("AWS_DEFAULT_REGION"))
 
     response = client.synthesize_speech(
@@ -30,3 +38,4 @@ def generate_audio(language: str = 'ru-RU', voice: str = 'Maxim', text: str = No
             except IOError as error:
                 # Could not write to file, exit gracefully
                 logging.error(error)
+    return None

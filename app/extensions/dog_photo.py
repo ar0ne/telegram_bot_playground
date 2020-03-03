@@ -1,7 +1,11 @@
+import os
 import re
 import requests
 
-BASE_URL = 'https://random.dog/woof.json'
+from typing import Optional
+
+BASE_URL = os.getenv('DOG_PHOTO_URL', 'https://random.dog/woof.json')
+WHITELISTED_FILE_EXTENSIONS = ('jpg', 'png', 'jpeg')
 
 
 def get_url() -> str:
@@ -9,10 +13,12 @@ def get_url() -> str:
     return response.json()['url']
 
 
-def get_photo_url() -> str:
-    allowed_extensions = ('jpg', 'png', 'jped')
-    extension = ''
-    while extension not in allowed_extensions:
+def get_photo_url() -> Optional[str]:
+    extension = None
+    url = None
+    while extension not in WHITELISTED_FILE_EXTENSIONS:
         url = get_url()
-        extension = re.search("([^.]*)$", url).group(1).lower()
+        match = re.search(r"([^.]*)$", url)
+        if match:
+            extension = match.group(1).lower()
     return url
