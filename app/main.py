@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 from functools import wraps
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
-from app.dao.db import DataBaseConnector, UserDao, CommandDao, StatisticsDao
-from app.extensions import dog_photo, cat_photo, text2speech, screenshoter
+from dao.db import DataBaseConnector, UserDao, CommandDao, StatisticsDao
+from extensions import dog_photo, cat_photo, text2speech, screenshoter
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

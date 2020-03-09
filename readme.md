@@ -76,4 +76,4 @@ $ ansible-playbook main.yml
 
 * Playbooks:
     - `main` - deploy and start application on target server
-    - `ec2` - create and launch new ec2 instance
+    - `aws-ec2` - create and launch new ec2 instance (@TODO: does not work)

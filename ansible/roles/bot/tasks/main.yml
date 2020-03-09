@@ -12,6 +12,7 @@
 - name: Install "pipenv"
   pip:
     name: pipenv
+    executable: pip3
 
 - name: Copy application to remote server
   synchronize:
