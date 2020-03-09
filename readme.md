@@ -77,3 +77,18 @@ $ ansible-playbook main.yml
 * Playbooks:
     - `main` - deploy and start application on target server
     - `aws-ec2` - create and launch new ec2 instance (@TODO: does not work)
+    
+
+# Translation
+
+First of all, you need to generate `pot`-file (Do it each time you changed/added new strings).
+
+```
+$ xgettext -d base -o locales/base.pot main.py
+```
+
+Then you need to generate binary files.
+
+```
+msgfmt -c locales/en/LC_MESSAGES/base.po -o locales/en/LC_MESSAGES/base.mo
+````

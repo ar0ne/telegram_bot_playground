@@ -4,6 +4,7 @@ import logging
 import random
 import re
 import json
+import gettext
 
 from typing import Callable, Any, TypeVar, cast
 from dotenv import load_dotenv
@@ -18,6 +19,11 @@ logging.basicConfig(level=logging.INFO,
 
 FuncType = Callable[..., Any]
 F = TypeVar('F', bound=FuncType)  # pylint: disable=invalid-name
+
+# TODO: move it into separate file
+lang = gettext.translation('base', localedir='locales', languages=[os.getenv('LANGUAGE', 'ru')])
+lang.install()
+_ = lang.gettext
 
 
 class TelegramBot:
@@ -101,12 +107,15 @@ class TelegramBot:
         return cast(F, wrapper)
 
     def unknown_cmd(self, update, context):
-        context.bot.send_message(chat_id=update.message.chat_id, text="Твоя моя не пониматъ.")
+        context.bot.send_message(
+            chat_id=update.message.chat_id,
+            text=_("I don't recognize the command.")
+        )
 
     @command
     @log_event
     def say_cmd(self, update, context):
-        ending = ', кожаный ублюдок!'
+        ending = _(", master")
         draft_message = ' '.join(context.args).strip()
         if 0 < len(draft_message) < 250:
             message = f"{draft_message}{ending}"
@@ -115,15 +124,18 @@ class TelegramBot:
                 context.bot.send_voice(chat_id=update.message.chat_id, voice=open(audio.name, 'rb'))
                 os.unlink(audio.name)
             else:
-                context.bot.send_message(chat_id=update.message.chat_id, text="рвфцвьцфьтвоцфв")
+                context.bot.send_message(chat_id=update.message.chat_id, text=_("Repeat please!"))
         else:
-            context.bot.send_message(chat_id=update.message.chat_id, text=f'Попроси лучше{ending}')
+            context.bot.send_message(chat_id=update.message.chat_id, text=_("Try again!"))
 
     @command
     @log_event
     def bibametr_cmd(self, update, context):
-        context.bot.send_message(chat_id=update.message.chat_id,
-                                 text=f"Твоя биба {random.randrange(3, 26)} сантиметров!")
+        length = random.randrange(3, 26)
+        context.bot.send_message(
+            chat_id=update.message.chat_id,
+            text=_("Your biba is ") + str(length) + _(", cm")
+        )
 
     @command
     @log_event
@@ -139,15 +151,17 @@ class TelegramBot:
             self.PING_CMD,
         )
         context.bot.send_message(
-            chat_id=update.message.chat_id, text=f"Умею и могу - /{', /'.join(commands)}")
+            chat_id=update.message.chat_id,
+            text=_("I can do following: ") + ",".join(commands)
+        )
 
     @command
     @log_event
     def statistics_cmd(self, update, context):
+        statistics = (json.dumps(self.statistic_dao.get_all(), indent=4, sort_keys=True))
         context.bot.send_message(
             chat_id=update.message.chat_id,
-            text=f"Твои должники:\n"
-            f"{json.dumps(self.statistic_dao.get_all(), indent=4, sort_keys=True)}"
+            text=_("Statistics:\n") + statistics
         )
 
     @command
@@ -164,18 +178,18 @@ class TelegramBot:
             else:
                 context.bot.send_message(
                     chat_id=update.message.chat_id,
-                    text="Не могу сделать скрин."
+                    text=_("I can't take a screenshot")
                 )
         else:
             context.bot.send_message(
                 chat_id=update.message.chat_id,
-                text="Не понял, повтори."
+                text=_("Repeat please!")
             )
 
     @log_event
     def secret_exit_cmd(self, update, context):
         self.is_running = not self.is_running
-        text = 'ня-пока' if not self.is_running else 'ня-привет'
+        text = _("Bye") if not self.is_running else _("Hi there!")
         context.bot.send_message(chat_id=update.message.chat_id, text=text)
 
     @command

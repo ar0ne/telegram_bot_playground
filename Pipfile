@@ -10,6 +10,7 @@ tox = "*"
 tox-pipenv-install = "*"
 pytest = "*"
 coverage = "*"
+python-gettext = "*"
 
 [packages]
 boto3 = "*"

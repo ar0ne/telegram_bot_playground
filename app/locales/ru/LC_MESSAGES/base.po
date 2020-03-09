@@ -1,0 +1,62 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: bot_app\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-03-09 18:28+0300\n"
+"PO-Revision-Date: 2020-03-09 18:28+0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: main.py:112
+msgid "I don't recognize the command."
+msgstr "Твоя моя непонимать"
+
+#: main.py:118
+msgid ", master"
+msgstr ", кожанный ублюдок"
+
+#: main.py:127 main.py:186
+msgid "Repeat please!"
+msgstr "Что-то пошло не по плану"
+
+#: main.py:129
+msgid "Try again!"
+msgstr "Попроси получше, кожа"
+
+#: main.py:137
+msgid "Your biba is "
+msgstr "Твоя биба "
+
+#: main.py:137
+msgid ", cm"
+msgstr ", см"
+
+#: main.py:155
+msgid "I can do following: "
+msgstr "Умею-могу: "
+
+#: main.py:164
+msgid "Statistics:\n"
+msgstr "Статистика:\n"
+
+#: main.py:181
+msgid "I can't take a screenshot"
+msgstr "Не могу сделать скиншот"
+
+#: main.py:192
+msgid "Bye"
+msgstr "ня-пока"
+
+#: main.py:191
+msgid "Hi there!"
+msgstr "ня-привет"

@@ -10,6 +10,7 @@ Pipfile.lock
 .coverage
 .coverage.coverage
 htmlcov/
+*.mo
 
 ansible/vars/*
 !ansible/vars
