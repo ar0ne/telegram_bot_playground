@@ -11,6 +11,8 @@ tox-pipenv-install = "*"
 pytest = "*"
 coverage = "*"
 python-gettext = "*"
+typing = "*"
+typing-extensions = "*"
 
 [packages]
 boto3 = "*"

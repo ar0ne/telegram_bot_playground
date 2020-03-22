@@ -6,10 +6,11 @@ import re
 import json
 import gettext
 
-from typing import Callable, Any, TypeVar, cast
+from typing import Any, TypeVar, cast
 from dotenv import load_dotenv
 from functools import wraps
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from typing_extensions import Protocol
 
 from dao.db import DataBaseConnector, UserDao, CommandDao, StatisticsDao
 from extensions import dog_photo, cat_photo, text2speech, screenshoter
@@ -17,11 +18,24 @@ from extensions import dog_photo, cat_photo, text2speech, screenshoter
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-FuncType = Callable[..., Any]
-F = TypeVar('F', bound=FuncType)  # pylint: disable=invalid-name
+
+class FuncProtocol(Protocol):
+    __call__: Any
+
+
+F = TypeVar('F', bound=FuncProtocol)
+
+
+def get_path_current_dir() -> str:
+    return os.path.dirname(os.path.abspath(__file__))
+
 
 # TODO: move it into separate file
-lang = gettext.translation('base', localedir='locales', languages=[os.getenv('LANGUAGE', 'ru')])
+lang = gettext.translation(
+    'base',
+    localedir=f"{get_path_current_dir()}/locales",
+    languages=[os.getenv('LANGUAGE', 'ru')]
+)
 lang.install()
 _ = lang.gettext
 
