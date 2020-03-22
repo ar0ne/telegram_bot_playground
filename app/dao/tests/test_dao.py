@@ -45,10 +45,12 @@ class TestUserDao(BaseDaoTestCase):
         updated_user = self.user_dao.get_by_id(user_id)
 
         self.assertIsNotNone(updated_user)
-        self.assertEqual(user_id, updated_user['id'])
-        self.assertEqual('updated', updated_user['username'])
-        self.assertEqual('first', updated_user['first_name'])
-        self.assertEqual('second', updated_user['last_name'])
+
+        if updated_user:
+            self.assertEqual(user_id, updated_user['id'])
+            self.assertEqual('updated', updated_user['username'])
+            self.assertEqual('first', updated_user['first_name'])
+            self.assertEqual('second', updated_user['last_name'])
 
 
 class TestCommandDao(BaseDaoTestCase):

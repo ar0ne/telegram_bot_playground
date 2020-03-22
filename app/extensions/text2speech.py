@@ -3,7 +3,7 @@ import os
 import logging
 import boto3
 
-from typing import BinaryIO, Optional
+from typing import Optional, IO
 from contextlib import closing
 from tempfile import NamedTemporaryFile
 
@@ -12,7 +12,7 @@ def generate_audio(
         language: Optional[str] = None,
         voice: Optional[str] = None,
         text: str = ''
-) -> Optional[BinaryIO]:
+) -> Optional[IO[bytes]]:
     """ Transform text into speech and provides audio file (mp3) as binary array """
     language = language or os.getenv("T2S_LANGUAGE", 'ru-RU')
     voice = voice or os.getenv("T2S_VOICE", 'Maxim')
